@@ -1,0 +1,27 @@
+{
+  "name": "kentaa-api",
+  "version": "1.0.0",
+  "description": "Node.js library for communicating with the Kentaa API.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scrKevin/kentaa-api.git"
+  },
+  "keywords": [
+    "nodejs",
+    "api",
+    "kentaa"
+  ],
+  "author": "scrKevin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/scrKevin/kentaa-api/issues"
+  },
+  "homepage": "https://github.com/scrKevin/kentaa-api#readme",
+  "dependencies": {
+    "request": "^2.88.2"
+  }
+}
