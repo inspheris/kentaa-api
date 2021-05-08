@@ -87,42 +87,49 @@ module.exports = class KentaaApi {
   }
 
   // list operations are paginated to 100 results per page (default is 25). We need to make multiple requests to fill our entire list.
-  // this method will check the totalpages and create additional requests accordingly.
-  async getEntirePaginatedList(apiLocation, nameOfTargetList)
+  // this method will check the totalpages, create additional requests accordingly and will resolve to the entire concatenated paginated list.
+  
+  /** Returns the entire paginated list of specified objects
+   * @param {string} apiLocation - The URL location as specified by the Kentaa API docs. IE. 'actions' for Action objects.
+   * @param {string} nameOfTargetList - The key name of the target list in the response. IE. 'donation_forms' for Donation forms objects.
+   * @param {Object} [optionalParameters] - Optional URL parameters.
+   */
+  async getEntirePaginatedList(apiLocation, nameOfTargetList, optionalParameters)
   {
+    if ( typeof optionalParameters === 'undefined' && !optionalParameters ) optionalParameters = {};
     let resultList = [];
-    // check the first result to get the number of pages
-    let urlParams = {
-      "per_page": "100",
-      "page": 1
-    }
-    let requestOptions = new RequestOptions(apiLocation, urlParams);
-    let listOfFirstPage = await this.doGetRequest(requestOptions);
+    optionalParameters["per_page"] = 100;
+    optionalParameters["page"] = 1;
+    let requestOptions = new RequestOptions("GET", apiLocation, { ... optionalParameters});
+    let listOfFirstPage = await this.doRequest(requestOptions);
     let totalPages = listOfFirstPage['total_pages'];
     if(totalPages == 1)
     {
+      // total pages == 1, so returning the list from the first page will suffice.
       return listOfFirstPage[nameOfTargetList];
     }
     else if (totalPages > 1)
     {
+      // total pages > 1, so additional requests will have to be made. The resulting lists per page will be concatenated to the original list.
       resultList = listOfFirstPage[nameOfTargetList];
       for (var page = 2; page <= totalPages; page++)
       {
-        let urlParams = {
-          "per_page": "100",
-          "page": page
-        }
-        let requestOptions = new RequestOptions(apiLocation, urlParams);
-        let listOfThisPage = await this.doGetRequest(requestOptions);
+        optionalParameters["page"] = page;
+        let requestOptions = new RequestOptions("GET", apiLocation, { ... optionalParameters});
+        let listOfThisPage = await this.doRequest(requestOptions);
         resultList = resultList.concat(listOfThisPage[nameOfTargetList]);
       }
       return resultList;
     }
   }
 
-  // do a GET request on the Kentaa api. Returns a promise that will resolve once the response of the request is received.
+  // do a  request on the Kentaa api. Returns a promise that will resolve once the response of the request is received.
   // if the api rate limit is exceeded, the promise will be resolved once the rate limits are reset (every minute or every hour).
-  doGetRequest(requestOptions)
+  
+  /** Do a request on the Kentaa API.
+   * @param {RequestOptions} requestOptions - The request options object.
+   */
+  doRequest(requestOptions)
   {
     let queuedRequest = new QueuedRequest(requestOptions, this);
     this.queuedRequests.push(queuedRequest);
@@ -133,26 +140,5 @@ module.exports = class KentaaApi {
 
     // return the promise that will be resolved when this request is dequeued.
     return queuedRequest.promise;
-  }
-
-  // methods for Kentaa specific lists. ie. segments, users, actions
-
-
-  // Dontation Forms https://developer.kentaa.nl/kentaa-api/#donation-forms
-
-  //https://developer.kentaa.nl/kentaa-api/#list-donation-forms
-  async listDonationForms()
-  {
-    return await this.getEntirePaginatedList("donation-forms", "donation_forms");
-  }
-  
-  async listSegments()
-  {
-    return await this.getEntirePaginatedList('segments', 'segments');
-  }
-
-  async listUsers()
-  {
-    return await this.getEntirePaginatedList('users', 'users')
   }
 }
