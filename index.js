@@ -3,6 +3,10 @@ var QueuedRequest = require('./lib/queued-request');
 var RequestOptions = require('./lib/request-options');
 
 var Actions = require('./lib/api/actions');
+var DonationForms = require('./lib/api/donation-forms');
+var Donations = require('./lib/api/donations');
+var ManualDonations = require('./lib/api/manual-donations');
+var NewsletterSubscriptions = require('./lib/api/newsletter-subscriptions');
 
 const REQUEST_LIMIT_PER_MINUTE = 100;
 const REQUEST_LIMIT_PER_HOUR = 500;
@@ -27,6 +31,10 @@ module.exports = class KentaaApi {
     this.remainingRequestThisMinute = REQUEST_LIMIT_PER_MINUTE;
     this.remainingRequestThisHour = REQUEST_LIMIT_PER_HOUR;
     this.actions = new Actions(this);
+    this.donationForms = new DonationForms(this);
+    this.donations = new Donations(this);
+    this.manualDonations = new ManualDonations(this);
+    this.newsletterSubscriptions = new NewsletterSubscriptions(this);
 
     // queue our requests so we can check if we are not exeeding the api rate limits
     this.queuedRequests = [];
