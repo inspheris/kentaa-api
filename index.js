@@ -7,6 +7,7 @@ var DonationForms = require('./lib/api/donation-forms');
 var Donations = require('./lib/api/donations');
 var ManualDonations = require('./lib/api/manual-donations');
 var NewsletterSubscriptions = require('./lib/api/newsletter-subscriptions');
+var Projects = require('./lib/api/projects');
 
 const REQUEST_LIMIT_PER_MINUTE = 100;
 const REQUEST_LIMIT_PER_HOUR = 500;
@@ -35,6 +36,11 @@ module.exports = class KentaaApi {
     this.donations = new Donations(this);
     this.manualDonations = new ManualDonations(this);
     this.newsletterSubscriptions = new NewsletterSubscriptions(this);
+    this.projects = new Projects(this);
+    this.projectApi = {
+      actions: new Actions(this, `projects`),
+      donations: new Donations(this, `projects`)
+    }
 
     // queue our requests so we can check if we are not exeeding the api rate limits
     this.queuedRequests = [];
@@ -46,6 +52,20 @@ module.exports = class KentaaApi {
   }
   
   //methods
+  /**
+   * 
+   * @param {Number} id The ID of the project you would like to query.
+   * @returns Object with available sub-query's.
+   */
+  project(id)
+  {
+    for (let api of Object.values(this.projectApi))
+    {
+      console.log(api);
+      api.setParentId(id);
+    }
+    return this.projectApi;
+  }
 
   // reset the request limit every minute and dequeue requests if there are any in the request queue.
   async resetRequestsThisMinute()
