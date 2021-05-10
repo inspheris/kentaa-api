@@ -1,13 +1,18 @@
-var helpers = require('./lib/helpers');
-var QueuedRequest = require('./lib/queued-request');
-var RequestOptions = require('./lib/request-options');
+const helpers = require('./lib/helpers');
+const QueuedRequest = require('./lib/queued-request');
+const RequestOptions = require('./lib/request-options');
 
-var Actions = require('./lib/api/actions');
-var DonationForms = require('./lib/api/donation-forms');
-var Donations = require('./lib/api/donations');
-var ManualDonations = require('./lib/api/manual-donations');
-var NewsletterSubscriptions = require('./lib/api/newsletter-subscriptions');
-var Projects = require('./lib/api/projects');
+const Actions = require('./lib/api/actions');
+const DonationForms = require('./lib/api/donation-forms');
+const Donations = require('./lib/api/donations');
+const ManualDonations = require('./lib/api/manual-donations');
+const NewsletterSubscriptions = require('./lib/api/newsletter-subscriptions');
+const Projects = require('./lib/api/projects');
+const RecurringDonors = require('./lib/api/recurring-donors');
+const Segments = require('./lib/api/segments');
+const Sites = require('./lib/api/sites');
+const Teams = require('./lib/api/teams');
+const Users = require('./lib/api/users');
 
 const REQUEST_LIMIT_PER_MINUTE = 100;
 const REQUEST_LIMIT_PER_HOUR = 500;
@@ -31,16 +36,47 @@ module.exports = class KentaaApi {
     this.apiKey = apiKey;
     this.remainingRequestThisMinute = REQUEST_LIMIT_PER_MINUTE;
     this.remainingRequestThisHour = REQUEST_LIMIT_PER_HOUR;
+    
     this.actions = new Actions(this);
     this.donationForms = new DonationForms(this);
+    this.donationFormApi = {
+      donations: new Donations(this, `donation-forms`),
+      manualDonations: new ManualDonations(this, `donation-forms`),
+      newsletterSubscriptions: new NewsletterSubscriptions(this, `donation-forms`),
+      recurringDonors: new RecurringDonors(this, `donation-forms`)
+    };
     this.donations = new Donations(this);
     this.manualDonations = new ManualDonations(this);
     this.newsletterSubscriptions = new NewsletterSubscriptions(this);
     this.projects = new Projects(this);
     this.projectApi = {
       actions: new Actions(this, `projects`),
-      donations: new Donations(this, `projects`)
+      donations: new Donations(this, `projects`),
+      manualDonations: new ManualDonations(this, `projects`),
+      newsletterSubscriptions: new NewsletterSubscriptions(this, `projects`),
+      teams: new Teams(this, `projects`)
+    };
+    this.recurringDonors = new RecurringDonors(this);
+    this.recurringDonorApi = {
+      donations: new Donations(this, `recurring-donors`)
     }
+    this.segments = new Segments(this);
+    this.segmentApi = {
+      actions: new Actions(this, `segments`),
+      donations: new Donations(this, `segments`),
+      manualDonations: new ManualDonations(this, `segments`),
+      newsletterSubscriptions: new NewsletterSubscriptions(this, `segments`),
+      projects: new Projects(this, `segments`),
+      teams: new Teams(this, `segments`)
+    }
+    this.sites = new Sites(this);
+    this.teams = new Teams(this);
+    this.teamApi = {
+      donations: new Donations(this, `teams`),
+      manualDonations: new ManualDonations(this, `teams`),
+    }
+    this.users = new Users(this);
+    
 
     // queue our requests so we can check if we are not exeeding the api rate limits
     this.queuedRequests = [];
@@ -52,20 +88,61 @@ module.exports = class KentaaApi {
   }
   
   //methods
+
   /**
-   * 
-   * @param {Number} id The ID of the project you would like to query.
+   * Sub-api for a specific Project
+   * @param {Number} id The ID of the Project you would like to query.
    * @returns Object with available sub-query's.
    */
   project(id)
   {
-    for (let api of Object.values(this.projectApi))
-    {
-      console.log(api);
-      api.setParentId(id);
-    }
+    helpers.editIdOfApi(id, this.projectApi);
     return this.projectApi;
   }
+
+  /**
+   * Sub-api for a specific Donation Form
+   * @param {Number} id The ID of the Donation Form you would like to query.
+   * @returns Object with available sub-query's.
+   */
+  donationForm(id)
+  {
+    helpers.editIdOfApi(id, this.donationFormApi);
+    return this.donationFormApi;
+  }
+
+  /**
+   * Sub-api for a specific Recurring Donor
+   * @param {Number} id The ID of the Recurring Donor you would like to query.
+   * @returns Object with available sub-query's.
+   */
+  recurringDonor(id)
+  {
+    helpers.editIdOfApi(id, this.recurringDonorApi);
+    return this.recurringDonorApi;
+  }
+
+  /**
+   * Sub-api for a specific Segment
+   * @param {Number} id The ID of the Segment you would like to query.
+   * @returns Object with available sub-query's.
+   */
+   segment(id)
+   {
+     helpers.editIdOfApi(id, this.segmentApi);
+     return this.segmentApi;
+   }
+
+   /**
+   * Sub-api for a specific Team
+   * @param {Number} id The ID of the Team you would like to query.
+   * @returns Object with available sub-query's.
+   */
+    team(id)
+    {
+      helpers.editIdOfApi(id, this.teamApi);
+      return this.teamApi;
+    }
 
   // reset the request limit every minute and dequeue requests if there are any in the request queue.
   async resetRequestsThisMinute()
@@ -118,8 +195,8 @@ module.exports = class KentaaApi {
   // this method will check the totalpages, create additional requests accordingly and will resolve to the entire concatenated paginated list.
   
   /** Returns the entire paginated list of specified objects
-   * @param {string} apiLocation - The URL location as specified by the Kentaa API docs. IE. 'actions' for Action objects.
-   * @param {string} nameOfTargetList - The key name of the target list in the response. IE. 'donation_forms' for Donation forms objects.
+   * @param {string} apiLocation - The URL location as specified by the Kentaa API docs. ie. 'actions' for Action objects.
+   * @param {string} nameOfTargetList - The key name of the target list in the response. ie. 'donation_forms' for Donation forms objects.
    * @param {Object} [optionalParameters] - Optional URL parameters.
    */
   async getEntirePaginatedList(apiLocation, nameOfTargetList, optionalParameters)
