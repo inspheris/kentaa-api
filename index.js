@@ -155,11 +155,11 @@ module.exports = class KentaaApi {
    * @param {Number} id The ID of the Team you would like to query.
    * @returns Object with available sub-query's.
    */
-    team(id)
-    {
-      helpers.editIdOfApi(id, this.teamApi);
-      return this.teamApi;
-    }
+  team(id)
+  {
+    helpers.editIdOfApi(id, this.teamApi);
+    return this.teamApi;
+  }
 
   // reset the request limit every minute and dequeue requests if there are any in the request queue.
   async resetRequestsThisMinute()
