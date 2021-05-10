@@ -36,6 +36,12 @@ Also, when you exceed your API rate limit during the request, this API library w
 
 You can implement handling the Promise with Promise.then(), but in the examples below we will only show async/await implementations.
 
+## Benefits
+
+* This library will keep an eye on your API rate limits. Fire your requests and wait for the Promise to resolve.
+* Automatic conversion between ISO 8601 date strings in UTC (as specified by the API) to a Date object in your local time.
+
+
 ### Actions
 https://developer.kentaa.nl/kentaa-api/?shell#actions
 ```javascript
@@ -46,6 +52,12 @@ async actionsDemo()
 {
   // list all Actions on entire site
   let actions = await ka.actions.list();
+
+  // list all Actions after 1st of January 2021
+  let params = {
+    "created_after": new Date(2021, 0, 1)
+  }
+  let actions = await ka.actions.list(params);
 
   // list all Actions for specific Project
   let actions = await ka.project([project_id]).actions.list();
