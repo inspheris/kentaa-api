@@ -1,6 +1,6 @@
 {
   "name": "kentaa-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node.js library for communicating with the Kentaa API.",
   "main": "index.js",
   "scripts": {
