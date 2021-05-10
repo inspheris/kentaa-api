@@ -31,11 +31,13 @@ const REQUEST_LIMIT_PER_HOUR = 500;
 // counters are reset on the 0th minute of every hour and the 0th second of every minute
 
 module.exports = class KentaaApi {
+  #remainingRequestThisMinute
+  #remainingRequestThisHour
 
   constructor(apiKey) {
     this.apiKey = apiKey;
-    this.remainingRequestThisMinute = REQUEST_LIMIT_PER_MINUTE;
-    this.remainingRequestThisHour = REQUEST_LIMIT_PER_HOUR;
+    this.#remainingRequestThisMinute = REQUEST_LIMIT_PER_MINUTE;
+    this.#remainingRequestThisHour = REQUEST_LIMIT_PER_HOUR;
     
     this.actions = new Actions(this);
     this.actionApi = {
@@ -164,8 +166,8 @@ module.exports = class KentaaApi {
   {
     while (true) // loop forever
     {
-      this.remainingRequestThisMinute = REQUEST_LIMIT_PER_MINUTE;
-      //console.log(`Resetting remaining requests this minute: ${this.remainingRequestThisMinute}`);
+      this.#remainingRequestThisMinute = REQUEST_LIMIT_PER_MINUTE;
+      // console.log(`Resetting remaining requests this minute: ${this.#remainingRequestThisMinute}`);
       this.dequeueNextRequest();
       await helpers.waitUntilNextMinute();
     }
@@ -176,8 +178,8 @@ module.exports = class KentaaApi {
   {
     while (true) // loop forever
     {
-      this.remainingRequestThisHour = REQUEST_LIMIT_PER_HOUR;
-      //console.log(`Resetting remaining requests this hour: ${this.remainingRequestThisHour}`);
+      this.#remainingRequestThisHour = REQUEST_LIMIT_PER_HOUR;
+      // console.log(`Resetting remaining requests this hour: ${this.#remainingRequestThisHour}`);
       this.dequeueNextRequest();
       await helpers.waitUntilNextHour();
     }
@@ -186,21 +188,23 @@ module.exports = class KentaaApi {
   // in the response header coming from the Kentaa api, the remaining requests are given. The queuedrequest object can set the value with these methods.
   setRemainingRequestThisMinute(newValue)
   {
-    this.remainingRequestThisMinute = newValue;
+    this.#remainingRequestThisMinute = newValue;
+    // console.log(`Remaining requests this minute: ${this.#remainingRequestThisMinute}`)
   }
 
   setRemainingRequestThisHour(newValue)
   {
-    this.remainingRequestThisHour = newValue;
+    this.#remainingRequestThisHour = newValue;
+    // console.log(`Remaining requests this hour: ${this.#remainingRequestThisHour}`)
   }
 
   // if this method is called, a queued request will be executed if the rate limit is not being exceeded. If no requests are queued, nothing will happen.
   dequeueNextRequest()
   {
-    if (this.queuedRequests.length > 0 && this.remainingRequestThisMinute > 0 && this.remainingRequestThisHour > 0)
+    if (this.queuedRequests.length > 0 && this.#remainingRequestThisMinute > 0 && this.#remainingRequestThisHour > 0)
     {
-      this.remainingRequestThisHour--;
-      this.remainingRequestThisMinute--;
+      this.#remainingRequestThisHour--;
+      this.#remainingRequestThisMinute--;
       let queuedRequest = this.queuedRequests.shift();
       queuedRequest.dequeue();
     }
