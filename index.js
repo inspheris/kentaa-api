@@ -38,6 +38,10 @@ module.exports = class KentaaApi {
     this.remainingRequestThisHour = REQUEST_LIMIT_PER_HOUR;
     
     this.actions = new Actions(this);
+    this.actionApi = {
+      donations: new Donations(this, `actions`),
+      manualDonations: new ManualDonations(this, `actions`)
+    }
     this.donationForms = new DonationForms(this);
     this.donationFormApi = {
       donations: new Donations(this, `donation-forms`),
@@ -88,6 +92,17 @@ module.exports = class KentaaApi {
   }
   
   //methods
+
+  /**
+   * Sub-api for a specific Action
+   * @param {Number} id The ID of the Action you would like to query.
+   * @returns Object with available sub-query's.
+   */
+   action(id)
+   {
+     helpers.editIdOfApi(id, this.actionApi);
+     return this.actionApi;
+   }
 
   /**
    * Sub-api for a specific Project
