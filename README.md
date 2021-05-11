@@ -205,6 +205,37 @@ async newsletterSubscriptionsDemo()
 }
 ```
 
+### Performances
+https://developer.kentaa.nl/kentaa-api/#performances
+```javascript
+const KentaaApi = require('kentaa-api');
+var ka = new KentaaApi('[your api key]');
+
+async performancesDemo()
+{
+  // list all Performances for specific Action
+  let performances = await ka.action([action_id]).performances.list();
+  
+  // get specific Performance by ID
+  let performances = await ka.action([action_id]).performances.list();
+  
+  // create Performance. See https://developer.kentaa.nl/kentaa-api/#create-a-performance for available bodyParameters.
+  let optionalBodyParamters = {
+    'description': "example description"
+  }
+  let newPerformance = await ka.action([action_id]).performances.create('[title]', '[performance_type]', [performance_at], '[distance]', optionalBodyParameters);
+
+  // update Performance. See https://developer.kentaa.nl/kentaa-api/#update-a-performance for available parameters.
+  let parametersToEdit = {
+    'distance': "100.00",
+  }
+  let updatedPerformance = await ka.action([action_id]).performances.update([performance_id], parametersToEdit)
+
+  // delete Performance
+  let deleteResponse = await ka.action([action_id]).performances.delete([performance_id]);
+}
+```
+
 ### Projects
 https://developer.kentaa.nl/kentaa-api/#projects
 ```javascript

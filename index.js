@@ -13,6 +13,7 @@ const Segments = require('./lib/api/segments');
 const Sites = require('./lib/api/sites');
 const Teams = require('./lib/api/teams');
 const Users = require('./lib/api/users');
+const Performances = require('./lib/api/performances');
 
 const REQUEST_LIMIT_PER_MINUTE = 100;
 const REQUEST_LIMIT_PER_HOUR = 500;
@@ -42,7 +43,8 @@ module.exports = class KentaaApi {
     this.actions = new Actions(this);
     this.actionApi = {
       donations: new Donations(this, `actions`),
-      manualDonations: new ManualDonations(this, `actions`)
+      manualDonations: new ManualDonations(this, `actions`),
+      performances: new Performances(this, `actions`)
     }
     this.donationForms = new DonationForms(this);
     this.donationFormApi = {
